@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Interactivo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1, h2, h3 {
+            margin-bottom: 10px;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .answer {
+            display: block;
+            background-color: #555;
+            color: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .answer:hover {
+            background-color: #777;
+        }
+        #next-button, #start-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #next-button:hover, #start-button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #score-container {
+            display: none;
+        }
+        #incorrect-questions-container {
+            display: none;
+            margin-top: 20px;
+        }
+        ul {
+            padding-left: 0;
+            list-style-type: none;
+            text-align: left;
+        }
+        ul li {
+            margin-bottom: 5px;
+        }
+        #reset-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#reset-button:hover {
+    background-color: #c82333;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tests EM segundo parcial Jose Luis Sáez </h1>
+        <h2 id="author-name">Miguel Velasco Fernández && Florín Emanuel Todor Gliga</h2>
+        <div id="question-container">
+            <p id="question">Haz click en "Comenzar Test" para empezar. Disfruta</p>
+            <div id="question-options"></div> <!-- Aquí se mostrarán las opciones de respuesta -->
+        </div>
+        <div class="button-container" id="answer-buttons" style="display: none;">
+            <!-- No se necesitan botones aquí para las opciones -->
+        </div>
+        <button id="next-button" onclick="nextQuestion()" style="display: none;">Siguiente Pregunta</button>
+        <div>
+            <p>Respondidas: <span id="answered-count">0</span></p>
+            <p>Aciertos: <span id="correct-count">0</span></p>
+            <p>Fallos: <span id="incorrect-count">0</span></p>
+            <p>Preguntas disponibles: <span id="available-questions-count">0</span></p>
+            <p id="score-container" style="display: none;">Nota: <span id="score">0</span></p>
+        </div>
+        <div id="incorrect-questions-container" style="display: none;">
+            <h3>Preguntas falladas:</h3>
+            <ul id="incorrect-questions-list"></ul>
+        </div>
+        <button id="start-button" onclick="startTest()">Comenzar Test</button>
+        
+    </div>
+
+    <script>
+        const allQuestions = [
+        {
+        "question": "(Pertenece a CASO 5.1) ¿Qué representan los ingresos de la balanza de capital para un país?",
+        "options": [
+            "a) Recursos provenientes de operaciones de activos inmateriales y transferencias de capital que aportan divisas.",
+            "b) Pérdidas generadas por inversiones en el extranjero.",
+            "c) Recursos internos derivados de la exportación de bienes tangibles.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.1) ¿Qué elementos se incluyen en las transferencias de capital?",
+        "options": [
+            "a) Compra de acciones extranjeras por residentes.",
+            "b) Operaciones comerciales dentro del país.",
+            "c) Flujos de efectivo provenientes de exportaciones.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.2) ¿Qué tipo de inversiones generan pérdidas de divisas en la balanza de capital?",
+        "options": [
+            "a) Compra de bienes inmuebles en el extranjero por residentes.",
+            "b) Venta de bonos nacionales a no residentes.",
+            "c) Inversiones de residentes en bienes de equipo locales.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.3) ¿Cómo afecta un régimen cambiario fijo a la economía de un país?",
+        "options": [
+            "a) Estabiliza la moneda frente a otras divisas.",
+            "b) Reduce la competitividad de exportaciones.",
+            "c) Incrementa la flexibilidad en política monetaria.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.3) ¿Qué caracteriza a los regímenes cambiarios flexibles?",
+        "options": [
+            "a) El valor de la moneda se determina por el mercado.",
+            "b) El gobierno establece límites de fluctuación.",
+            "c) Las reservas internacionales no afectan el tipo de cambio.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.4) ¿Qué ventaja tiene la Paridad del Poder Adquisitivo (PPP) en el largo plazo?",
+        "options": [
+            "a) Proporciona una guía para analizar la relación entre precios y tipos de cambio.",
+            "b) Reduce la volatilidad en el corto plazo.",
+            "c) Elimina las diferencias entre tasas de inflación.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.6) ¿Por qué la PPP relativa es más útil en el largo plazo?",
+        "options": [
+            "a) Porque considera las variaciones en tasas de inflación.",
+            "b) Porque permite prever tipos de cambio exactos.",
+            "c) Porque ignora las fluctuaciones a corto plazo.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.7) ¿Cómo afectan los aumentos en la oferta monetaria según el enfoque monetario?",
+        "options": [
+            "a) Generan inflación y depreciación del tipo de cambio.",
+            "b) Reducen el riesgo de inflación.",
+            "c) Incrementan el valor del tipo de cambio.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.8) ¿Qué objetivo tenía China al fijar el RMB al dólar?",
+        "options": [
+            "a) Fomentar sus exportaciones y mantener competitividad.",
+            "b) Reducir las importaciones.",
+            "c) Controlar el mercado interno de divisas.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.8) ¿Qué desventaja tiene un tipo de cambio fijo para una economía como la china?",
+        "options": [
+            "a) Limita la flexibilidad en la política monetaria.",
+            "b) Incrementa la inflación interna.",
+            "c) Reduce las exportaciones.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.10) ¿Qué se busca al usar un anclaje en el tipo de cambio?",
+        "options": [
+            "a) Reducir la volatilidad en los precios.",
+            "b) Incrementar la flexibilidad monetaria.",
+            "c) Estabilizar los mercados internos.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.14) ¿Cómo impacta la fijación del RMB al dólar en las reservas internacionales de China?",
+        "options": [
+            "a) Incrementa las reservas debido al superávit comercial.",
+            "b) Disminuye las reservas al limitar exportaciones.",
+            "c) No afecta significativamente las reservas.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 5.15) ¿Qué papel juegan los depósitos de no residentes en la balanza financiera?",
+        "options": [
+            "a) Generan ingresos que se registran como entradas de divisas.",
+            "b) No tienen impacto en la balanza financiera.",
+            "c) Generan pérdidas para el país receptor.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a TITULAR 5.1) ¿Qué atributos clave influyen en la demanda de activos financieros?",
+        "options": [
+            "a) Rendimiento, riesgo y liquidez.",
+            "b) Riesgo, inflación y política monetaria.",
+            "c) Rendimiento, inflación y estabilidad política.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a TITULAR 5.8) ¿Qué ocurre cuando un gobierno imprime más dinero?",
+        "options": [
+            "a) La inflación aumenta y el valor de la moneda disminuye.",
+            "b) El valor de la moneda se estabiliza.",
+            "c) Se reduce la inflación interna.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a TITULAR 5.9) ¿Cómo afecta un tipo de cambio flotante al valor de una moneda?",
+        "options": [
+            "a) Depende de la oferta y demanda en el mercado de divisas.",
+            "b) Se mantiene fijo por intervención gubernamental.",
+            "c) Genera un valor estable y predecible.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "Los ingresos de la balanza de capital son...",
+        "options": [
+            "a. Aquellos que proceden de las operaciones de activos inmateriales no financieros (terrenos, patentes, alquileres,...) y las transferencias de capital (venta de acciones de empresas extranjeras que realizan los residentes, compra de acciones de empresas del país que realizan los no residentes, inversiones en bienes de equipo y maquinaria que realizan los no residentes,...), que suministran divisas al país. Y se anotan con signo (-) No es cierto que se anoten con signo (-)",
+            "b. Aquellos que proceden de las operaciones de activos inmateriales no financieros (terrenos, patentes, alquileres,...) y las transferencias de capital (venta de acciones de empresas extranjeras que realizan los residentes, compra de acciones de empresas del país que realizan los no residentes, inversiones en bienes de equipo y maquinaria que realizan los no residentes,...), que suministran divisas al país. Y se anotan con signo +",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "Los pagos de la balanza de capital son...",
+        "options": [
+            "a. Aquellos que proceden de las operaciones de activos inmateriales no financieros (terrenos, patentes, alquileres,...) y las transferencias de capital (venta de acciones de empresas extranjeras que realizan los residentes, compra de acciones de empresas del país que realizan los no residentes, inversiones en bienes de equipo y maquinaria que realizan los no residentes,...), que suministran divisas al país. Y se anotan con signo -",
+            "b. Aquellos que proceden de las operaciones de activos inmateriales no financieros (terrenos, patentes, alquileres,...) y las transferencias de capital (venta de acciones de empresas del país que realizan los no residentes, compra de acciones de empresas del extranjero que realizan los residentes, inversiones en bienes de equipo y maquinaria que realizan los residentes,...), que suponen una pérdida de divisas para el país. Y se anotan con signo (+). No es cierto que se anoten con signo (-)",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "Dos paises que pueden integrarse encuentran...",
+        "options": [
+            "a) Que la mejor estrategia unilateral es la integracion regional.",
+            "b) Que la estrategia dominante y opcion optima es el acuerdo multilateral.",
+            "c) Las dos respuestas son ciertas.",
+            "d) Ninguna de las respuestas es cierta."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "En la balanza financiera se anotan...",
+        "options": [
+            "a. Las inversiones en el exterior realizadas por residentes, las inversiones procedentes del exterior realizadas por los no residentes, y los ingresos y pagos procedentes de operaciones de activos inmateriales no financieros y las transferencias de capital. No es cierto que los ingresos y pagos procedentes de operaciones de activos inmateriales no financieros y las transferencias de capital se anoten en la balanza financiera, ya que se anotan en la balanza de capital",
+            "b. Las inversiones en el exterior realizadas por residentes, las inversiones procedentes del exterior realizadas por los no residentes, otras inversiones realizadas por residentes en el resto del mundo y no residentes en el país (tales como operaciones de préstamo comercial y financiero y depósitos).",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "Definimos el tipo de cambio...",
+        "options": [
+            "a. Desde un país europeo, como el número de monedas divisa internacional, que hemos de entregar en el mercado de divisas para conseguir una unidad de moneda nacional. No es cierta, pues es el número de euros (moneda nacional) que hemos de entregar para obtener 1 $ (divisa)",
+            "b. Desde EE.UU, como el número de monedas nacionales, que hemos de entregar en el mercado de divisas para conseguir una unidad de divisa internacional. No es cierta, al decir “hemos” se refiere a un ciudadano europeo, por ej. Si es cierto que en EE.UU el tc es el número de $ (moneda nacional) que hay que entregar para obtener 1 euro (divisa). De todo ello se deduce que para un europeo, el tc $/euro es la inversa del tc euro/$.",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "El arbitraje de divisas sería igual a...",
+        "options": [
+            "a. A 0,02 € por $, si se compra 1 $ en el mercado de divisas de Madrid, al tipo de cambio de 2,01€ por $; y vende dicho $ en el mercado de divisas de Tokio, al tipo de cambio de 1,99€ por $. No es cierto, pues para que el arbitraje fuese de 0,02 € por $ tendría que comprar en Madrid a 1,99 € por $ y vender en Tokio a 2,01€ por $.",
+            "b. A 0,02 € por $, si se compra 1 $ en el mercado de divisas de Madrid, al tipo de cambio de 1,99€ por $; y vende dicho $ en el mercado de divisas de Tokio, al tipo de cambio de 2,01€ por $.",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "En un mercado de divisas perfectamente competitivo, el arbitraje de divisas tiende...",
+        "options": [
+            "a. A igualar el tipo de cambio en los mercados de París y New York, siempre y cuando se incremente la demanda de divisas en los dos mercados. No es cierto, pues la proposición predice que el arbitraje tiende a igualar los tipos de cambio en París y New York, siempre y cuando se incremente la demanda de divisas, por ej., en París; y simultáneamente, aumente la oferta de divisas en New York.",
+            "b. Al igualar el tipo de cambio en los mercados de París y New York, siempre y cuando se incremente la demanda de divisas, por ej., en París; y simultáneamente, se incremente la oferta de divisas en New York.",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "En el sistema Patrón Oro, el punto de oro de las exportaciones se define:",
+        "options": [
+            "a. POXsk = (Número de s + ct)/ 1k.",
+            "b. POXsk = (Número de s - ct)/ 1k.",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "En el sistema Patrón Oro, el punto de oro de las importaciones se define:",
+        "options": [
+            "a. POMsk = (Número de s - ct)/ 1k.",
+            "b. POMsk = (Número de s + ct)/ 1k.",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "El arbitraje de divisas sería igual a…",
+        "options": [
+            "a. A 0,02€ por $, si se compra 1$ en el mercado de divisas de Madrid, al tipo de cambio de 2,01€ por $, y vende dicho $ en el mercado de divisa de Tokio, al tipo de cambio de 1,99€ por $. No es cierto, ya que para que el arbitraje fuese de 0,02€ por $ tendría que comprar en Madrid a 1,99 por $ y vender en Tokio a 2,01€ por $.",
+            "b. A 0,02€ por $, si se compra 1$ en el mercado de divisas de Madrid, al tipo de cambio de 1,99€ por $, y vende dicho $ en el mercado de divisa de Tokio, al tipo de cambio de 2,01€ por $.",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "En un mercado de divisas perfectamente competitivo, el arbitraje de divisas tiende…",
+        "options": [
+            "a. A igualar el tipo de cambio en los mercados de París y New York, siempre y cuando se incremente la demanda de divisas en los dos mercados.",
+            "b. A igualar el tipo de cambio en los mercados de París y New York, siempre y cuando se incremente la demanda de divisas, por ejemplo, en París; y simultáneamente, se incremente la oferta de divisas en New York.",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "Definimos el tipo de cambio…",
+        "options": [
+            "a. Desde un país europeo, como el número de monedas divisa internacional, que hemos de entregar en el mercado de divisas para conseguir una unidad de moneda nacional. Esta es la definición americana.",
+            "b. Desde EE.UU, como el número de monedas nacionales, que hemos de entregar en el mercado de divisas para conseguir una unidad de divisa internacional. Esta es la definición Europea.",
+            "c. Las dos respuestas anteriores son ciertas.",
+            "d. Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "Ceteris paribus, cuando los precios de los bienes se mantienen constantes en las monedas locales:",
+        "options": [
+            "a. Cuando el tipo de cambio doméstico se deprecia, se abaratan las exportaciones domésticas y se encarecen las importaciones domésticas.",
+            "b. Cuando el tipo de cambio doméstico se deprecia, se encarecen las exportaciones domésticas y se abaratan las importaciones domésticas.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "La predicción del tipo de cambio real y nominal se puede realizar a través de:",
+        "options": [
+            "a. Velocidad de convergencia.",
+            "b. El tipo de cambio real.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "La liberalización financiera de los años 80 en Reino Unido y Alemania:",
+        "options": [
+            "a. Supuso un acercamiento de los tipos de cambio Libra/Marco que verifica PACI.",
+            "b. Supuso un alejamiento de los tipos de cambio Libra/Marco que verifica PACI.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "Ante un rendimiento bajo, un inversor exigirá:",
+        "options": [
+            "a. Un bajo riesgo o una alta liquidez.",
+            "b. Un bajo riesgo o una baja liquidez.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "La Teoría de la PPA:",
+        "options": [
+            "a. Es útil a c/p (horizonte de unos pocos años).",
+            "b. Es una guía útil para la relación entre los precios y los tipos de cambio a l/p.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "La dolarización de un país se puede producir:",
+        "options": [
+            "a. De hecho.",
+            "b. De jure.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "El índice Big Mac:",
+        "options": [
+            "a. Evidencia que el incumplimiento de la PPA es evidente.",
+            "b. Evidencia que el propio índice no tiene una base sólida.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "La evidencia sobre el enfoque monetario muestra que:",
+        "options": [
+            "a. Incrementos de la tasa de crecimiento de la oferta monetaria se producen al mismo nivel que incrementos en la tasa de inflación y de depreciación del tipo de cambio.",
+            "b. Ante un incremento de la tasa de crecimiento de la oferta monetaria se produce una disminución de la tasa de inflación y la tasa de depreciación del tipo de cambio permanece invariable.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "Es Unión económica y monetaria es:",
+        "options": [
+            "a) una mojada del UA",
+            "b) otra mojada del otra cosa",
+            "c) todas son correctas",
+            "d) ninguna es correcta"
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "Efecto desviación del comercio:",
+        "options": [
+            "a) hay una pérdida de bienestar",
+            "b) se compra más caro al país de la alianza que al del resto del mundo",
+            "c) todas",
+            "d) ninguna"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "El efecto creación de comercio:",
+        "options": [
+            "a) una mojada que disminuye el excedente del oferente y aumenta el del consumidor",
+            "b) la misma mojada pero dice que aumenta el excedente de los dos",
+            "c) todas",
+            "d) ninguna"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "La tasa de protección efectiva es:",
+        "options": [
+            "a) igual arancel nominal siempre y cuando la relación entre el coste del input-ésimo que importa un país y el precio del bien final en una situación de libre comercio sea igual al arancel nominal",
+            "b) es negativa, si el producto entre la relación entre el coste de input-ésimo importa un país y el precio del bien final en una situación de libre comercio y la arancelaria aplicada al input-ésimo es mayor que el arancel nominal",
+            "c) todas",
+            "d) ninguna"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "El efecto neto de imposición de un arancel sobre el bienestar es:",
+        "options": [
+            "a) la suma de la pérdida de eficiencia del oferente, la ganancia de eficiencia del consumidor y la ganancia en la relación de intercambio",
+            "b) igual a la pérdida del excedente del consumidor, menos la ganancia de los oferentes y menos los ingresos del gobierno",
+            "c) todas",
+            "d) ninguna"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "La ganancia potencial de integrarse en una unión aduanera es mayor:",
+        "options": [
+            "a) Cuanto mayor sean los costes unitarios o medios de producción y mayor sea la diferencia entre el nivel de producción y el nivel de mínima eficiencia",
+            "b) Cuanto menor sean los costes unitarios o medios de producción y menor sea la diferencia entre el nivel de producción y nivel de mínima eficiencia",
+            "c) todas",
+            "d) ninguna"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a Titular6.1-CrisisCambiarias) ¿Qué impacto tienen las crisis cambiarias en las economías afectadas?",
+        "options": [
+            "a) Consecuencias económicas significativas y posibles impactos políticos dramáticos.",
+            "b) Únicamente efectos temporales en los mercados de divisas.",
+            "c) Incremento de la estabilidad política a largo plazo.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a Práctica 6. Crisis cambiaria europa 1992) ¿Qué acción tomaron los bancos centrales europeos durante la crisis cambiaria de 1992?",
+        "options": [
+            "a) Intervenciones para evitar una depreciación excesiva de sus monedas.",
+            "b) Reducción de las tasas de interés para estabilizar los mercados.",
+            "c) Venta masiva de reservas internacionales para aumentar la liquidez.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a Caso6.8) ¿Qué caracteriza a una crisis cambiaria según el análisis de este caso?",
+        "options": [
+            "a) Grandes flujos de capital especulativo que desestabilizan el tipo de cambio.",
+            "b) Incrementos constantes en las reservas internacionales.",
+            "c) Depreciación paulatina sin intervención gubernamental.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a CASO 6.1) ¿Qué evento llevó al colapso del sistema de Bretton Woods?",
+        "options": [
+            "a) La creciente inflación en Estados Unidos debido al gasto público.",
+            "b) El aumento de las tasas de interés en Europa.",
+            "c) La disminución del comercio internacional.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a Caso 6.3) ¿Cómo afectó el final de Bretton Woods a la inflación mundial?",
+        "options": [
+            "a) Incrementó la inflación debido a la transición a tipos de cambio flexibles.",
+            "b) Redujo la inflación al estabilizar los mercados internacionales.",
+            "c) No tuvo impacto significativo en la inflación global.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "(Pertenece a 6.10) ¿Quién asumió los costos de la crisis en la Eurozona según el análisis del caso?",
+        "options": [
+            "a) Principalmente los países periféricos, debido a la falta de cooperación en el reparto de cargas.",
+            "b) Los países centrales, quienes soportaron la mayor parte de las pérdidas.",
+            "c) Se distribuyeron equitativamente entre todos los países miembros.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "La globalización económica es...",
+        "options": [
+            "a) El proceso de internacionalización que ha experimentado el comercio desde 1870, hasta nuestros días.",
+            "b) El proceso de internacionalización que ha experimentado el comercio internacional, las finanzas internacionales, la movilidad de las inversiones, las posibilidades de difusión tecnológica.",
+            "c) Las respuestas a y b son ciertas.",
+            "d) Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "c"
+    },
+    {
+        "question": "Las fuerzas que impulsaron la globalización fueron...",
+        "options": [
+            "a) El cambio tecnológico, la liberación comercial y financiera, y la movilidad de personas.",
+            "b) El cambio tecnológico, la liberación comercial y financiera y las inversiones extranjeras.",
+            "c) Las respuestas a y b son ciertas.",
+            "d) Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "La segunda oleada de la globalización (1945-80) se distinguió por la liberalización comercial discriminatoria, y que consistió...",
+        "options": [
+            "a) El comercio de bienes y servicios entre los países desarrollados no era libre.",
+            "b) Los países en vías de desarrollo tan sólo vieron cómo se liberalizaron las barreras para aquellos productos agrícolas que no competían con la producción agrícola de los países desarrollados.",
+            "c) Las respuestas a y b son ciertas.",
+            "d) Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "En la segunda oleada de la globalización, las economías de conglomerados permitieron...",
+        "options": [
+            "a) Incrementar la productividad.",
+            "b) Reducir los costes de transporte.",
+            "c) Las respuestas a y b son ciertas.",
+            "d) Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "c"
+    },
+    {
+        "question": "Algunos países menos desarrollados han logrado un importante desarrollo del sector manufacturero debido...",
+        "options": [
+            "a) A la disminución de los aranceles que imponían los países desarrollados, la disminución de las barreras a la inversión extranjera que estos países menos desarrollados imponían, la existencia de mano de obra muy competitiva, y la incorporación de avances tecnológicos en el transporte y las comunicaciones.",
+            "b) Al aumento de los aranceles que imponían los países menos desarrollados, la disminución de las barreras a la inversión extranjera que los países desarrollados imponían, la existencia de mano de obra poco competitiva, y la incorporación de stock de capital.",
+            "c) Las respuestas a y b son ciertas.",
+            "d) Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "Entre las ventajas de la globalización encontramos...",
+        "options": [
+            "a) La productividad aumenta más en aquellos países que producen bienes y servicios y no tienen ventajas comparativas.",
+            "b) La competencia internacional contribuye a incrementar los precios.",
+            "c) Las respuestas a y b son ciertas.",
+            "d) Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "Entre los inconvenientes de la globalización encontramos...",
+        "options": [
+            "a) La des(localización) internacional de los servicios y la gestión.",
+            "b) La mayor competencia laboral, que contribuye a una reducción del salario real.",
+            "c) Las respuestas a y b son ciertas.",
+            "d) Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "c"
+    },
+    {
+        "question": "La regionalización de la economía mundial se caracteriza por...",
+        "options": [
+            "a) La eliminación de barreras comerciales entre los países del bloque.",
+            "b) Imponer políticas comerciales comunes frente a terceros países.",
+            "c) Las respuestas a y b son ciertas.",
+            "d) Ninguna de las respuestas anteriores es cierta."
+        ],
+        "correct": "c"
+    },
+    {
+        "question": "(Pertenece a Caso 6.6.pptx) ¿Qué estrategia adoptaron algunos países para enfrentar las crisis cambiarias?",
+        "options": [
+            "a) Introducción de controles de capital para estabilizar los flujos financieros.",
+            "b) Eliminación total de las barreras comerciales.",
+            "c) Transición inmediata a regímenes de tipo de cambio fijo.",
+            "d) Ninguna de las anteriores."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "Dos países que pueden integrarse encuentran:",
+        "options": [
+            "a) Que la mejor estrategia unilateral es la integración regional",
+            "b) Que la estrategia dominante y opción óptima es el acuerdo multilateral",
+            "c) todas",
+            "d) ninguna"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "Tiene consideración de hiperinflación:",
+        "options": [
+            "a. Una tasa de inflación del 50% anual en los países desarrollados.",
+            "b. Una tasa de inflación del 22% mensual en los no desarrollados.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "Las causas de la hiperinflación de Zimbabue fueron:",
+        "options": [
+            "a. Circunstancias económicas.",
+            "b. Respuesta del Banco Central.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "Una práctica habitual de los Gobiernos de países con problemas de hiperinflación es:",
+        "options": [
+            "a. Crear una nueva moneda equiparándola a la anterior en miles de unidades.",
+            "b. Dejar que el mercado de divisas se autorregule.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "El efecto Fisher evidencia que:",
+        "options": [
+            "a. A l/p, países con una elevada inflación suelen tener tipos de interés elevados.",
+            "b. A c/p, su utilidad es bastante baja.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "Los bancos pueden controlar los tipos de interés del mercado monetario a través de:",
+        "options": [
+            "a. Los tipos de interés.",
+            "b. La oferta monetaria.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "El efecto Fisher:",
+        "options": [
+            "a. Indica que los tipos de interés siguen sendas relativamente constantes. Si bien, a corto plazo los bancos centrales pueden modificar sus políticas monetarias.",
+            "b. No se cumple nunca porque los tipos de interés siguen sendas irregulares tanto a largo como a corto plazo.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "Respecto a la correlación entre tipos de interés del Euro y la Corona danesa:",
+        "options": [
+            "a. Era del 0,99, muy fiable.",
+            "b. Era de un escaso 0,38, poco fiable.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "A la hora de operar en los mercados:",
+        "options": [
+            "a. Es más importante utilizar los métodos técnicos.",
+            "b. Es más importantes utilizar los métodos económicos.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "c"
+    },
+    {
+        "question": "Los desbordamientos del tipo de cambio se producen en:",
+        "options": [
+            "a. Tipos de cambio fijos.",
+            "b. Tipos de cambio flexibles.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "El patrón oro:",
+        "options": [
+            "a. Ha sido el sistema cambiario por excelencia tras la Segunda Guerra Mundial.",
+            "b. Fue el sistema cambiario por excelencia hasta la Primera Guerra Mundial y resurgió en el período de entreguerras.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "Ante la reunificación alemana, el Reino Unido:",
+        "options": [
+            "a. Decidió mantenerse en el MTC.",
+            "b. Decidió abandonar el MTC para volver a controlar su autonomía financiera.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "La respuesta a la crisis de 1997 de Australia y N. Zelanda se produjo:",
+        "options": [
+            "a. Un desplazamiento de la curva IS a la izquierda.",
+            "b. Un desplazamiento de la curva LM a la derecha.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "La política macroeconómica con trampa de liquidez:",
+        "options": [
+            "a. La situación de trampa de liquidez de los países hizo que se tuviese emplear una política fiscal expansiva de aumento de gasto público, además de la política monetaria expansiva para contrarrestar su efecto.",
+            "b. La situación de trampa de liquidez pudo ser atendida con una política monetaria expansiva de aumento de oferta de monetaria sin necesidad de acudir a la política fiscal.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué tipo de medida se usó para reducir las importaciones y afectar a la competitividad tras el abandono del patrón oro?",
+        "options": [
+            "a. Devaluaciones competitivas",
+            "b. Revaluaciones competitivas",
+            "c. Flotaciones competitivas",
+            "d. Fijaciones competitivas"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué tipo de instrumento de liquidez internacional se creó debido a la expansión fiduciaria y a las fuertes presiones en los mercados en el sistema de cambios-oro?",
+        "options": [
+            "a. Los Derechos Especiales de Giro (DEG)",
+            "b. Los Derechos Especiales de Cambio (DEC)",
+            "c. Los Derechos Especiales de Crédito (DEC)",
+            "d. Los Derechos Especiales de Reserva (DER)"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué característica tienen los DEG que los diferencia de otros instrumentos de liquidez internacional?",
+        "options": [
+            "a. Se pueden usar para liquidar directamente",
+            "b. Se asignan a cada país afiliado en proporción a su cuota en el Fondo",
+            "c. Tienen vencimiento a plazo fijo",
+            "d. Tienen un valor fijo en términos de gramos de oro fino"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "¿Qué nombre recibió el acuerdo definitivo que reformó el FMI tras la crisis del petróleo y la inconvertibilidad del dólar?",
+        "options": [
+            "a. Las Reglas de Bretton Woods",
+            "b. Las Reglas de Jamaica",
+            "c. Las Reglas de Washington",
+            "d. Las Reglas de Ginebra"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "¿Qué aspecto negativo del FMI se refiere a la transferencia de renta a agentes que no han sabido gestionar bien sus recursos?",
+        "options": [
+            "a. Distorsiona los ajustes del mercado",
+            "b. Actuaciones en crisis",
+            "c. Riesgo moral",
+            "d. Riesgo sistémico"
+        ],
+        "correct": "c"
+    },
+    {
+        "question": "¿Qué tratado creó la comunidad económica europea y estableció un mercado común entre las economías participantes?",
+        "options": [
+            "a. Tratado de Roma",
+            "b. Tratado de Maastricht",
+            "c. Tratado de Lisboa",
+            "d. Tratado de París"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué sistema de bandas de fluctuación con una paridad central con respecto al dólar fue el primer paso para la integración monetaria en la CE?",
+        "options": [
+            "a. Serpiente Monetaria",
+            "b. Serpiente en el Túnel",
+            "c. Serpiente en el Lago",
+            "d. Serpiente en el Agua"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué sistema regional comunitario se independizó del dólar por usar de referencia la paridad central para las bandas de fluctuación?",
+        "options": [
+            "a. El Sistema Monetario Europeo (SME)",
+            "b. El Sistema Monetario Internacional (SMI)",
+            "c. El Sistema Monetario Comunitario (SMC)",
+            "d. El Sistema Monetario Interregional (SMIR)"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué tratado estableció los criterios de convergencia para la Unión Económica y Monetaria (UEM)?",
+        "options": [
+            "a. Tratado de Roma",
+            "b. Tratado de Maastricht",
+            "c. Tratado de Lisboa",
+            "d. Tratado de París"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "¿Qué tipo de inversión se realiza en un país distinto al de origen para obtener capacidad de decisión en la empresa receptora?",
+        "options": [
+            "a. Inversión Directa Extranjera (IDE)",
+            "b. Inversión Indirecta Extranjera (IIE)",
+            "c. Inversión Financiera Extranjera (IFE)",
+            "d. Inversión Comercial Extranjera (ICE)"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué teoría explicativa de la inversión exterior se basa en el desplazamiento del factor capital desde los países en los que abunda a los que menos?",
+        "options": [
+            "a. Teoría derivada del modelo neoclásico",
+            "b. Teoría eléctrica o paradigma Oli",
+            "c. Teoría derivada de la inversión internacional en cartera",
+            "d. Teoría de la ventaja monopolística"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué teoría explicativa de la inversión exterior se basa en el conjunto de ventajas de propiedad, localización e internalización?",
+        "options": [
+            "a. Teoría derivada del modelo neoclásico",
+            "b. Teoría eléctrica o paradigma Oli",
+            "c. Teoría derivada de la inversión internacional en cartera",
+            "d. Teoría de la ventaja monopolística"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "¿Qué teoría explicativa de la inversión exterior se basa en la diversificación horizontal y vertical de las actividades y la localización geográfica?",
+        "options": [
+            "a. Teoría derivada del modelo neoclásico",
+            "b. Teoría eléctrica o paradigma Oli",
+            "c. Teoría derivada de la inversión internacional en cartera",
+            "d. Teoría de la ventaja monopolística"
+        ],
+        "correct": "c"
+    },
+    {
+        "question": "¿Qué teoría explicativa de la inversión exterior se basa en la adquisición de una posición de dominio en mercados globalizados?",
+        "options": [
+            "a. Teoría derivada del modelo neoclásico",
+            "b. Teoría eléctrica o paradigma Oli",
+            "c. Teoría derivada de la inversión internacional en cartera",
+            "d. Teoría de la ventaja monopolística"
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "¿Qué tipo de países tienen más peso la inversión en la agricultura y manufacturas?",
+        "options": [
+            "a. Países desarrollados (PD)",
+            "b. Países en desarrollo (PDV)",
+            "c. Países emergentes (PE)",
+            "d. Países industrializados (PI)"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "¿Qué beneficio de la inversión extranjera se refiere a la mejora de las capacidades productivas y competitivas del país receptor?",
+        "options": [
+            "a. Transferencia de tecnología",
+            "b. Aumento del comercio",
+            "c. Generación de empleo",
+            "d. Aceleración del desarrollo económico"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué efecto financiero de las crisis financieras se refiere a la pérdida de valor de la moneda nacional frente a otras monedas?",
+        "options": [
+            "a. Desplome de las bolsas",
+            "b. Depreciación o devaluación de monedas",
+            "c. Quiebra de los sistemas financieros",
+            "d. Aumento de los tipos de interés"
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "¿Qué análisis de las crisis financieras se centra en los ataques especulativos como causa de las mismas?",
+        "options": [
+            "a. Análisis clásico",
+            "b. Enfoque moderno",
+            "c. Enfoque de síntesis",
+            "d. Análisis alternativo"
+        ],
+        "correct": "a"
+    },
+    {
+        "question": "¿Qué enfoque de las crisis financieras combina elementos de los enfoques clásico y moderno y defiende que muchos países no están en una situación tan sólida ni tan frágil como para que el ataque sea impensable o inevitable?",
+        "options": [
+            "a. Análisis clásico",
+            "b. Enfoque moderno",
+            "c. Enfoque de síntesis",
+            "d. Análisis alternativo"
+        ],
+        "correct": "c"
+    },
+    {
+        "question": "Para ser considerada una crisis cambiaria como tal:",
+        "options": [
+            "a. Debe depreciarse la moneda local entre un 15% y un 20% en economías emergentes.",
+            "b. Debe depreciarse la moneda local entre un 15% y un 20% en economías avanzadas.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "b"
+    },
+    {
+        "question": "Las crisis cambiarias pueden ser muy perjudiciales porque, en ocasiones:",
+        "options": [
+            "a. Conllevan crisis en el sector privado (crisis bancarias).",
+            "b. Conllevan crisis de impago de la deuda por parte del Gobierno (crisis de impago).",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "d"
+    },
+    {
+        "question": "Incluso cuando las consecuencias son positivas, el coste político de las crisis cambiarias es:",
+        "options": [
+            "a. Positivo",
+            "b. Negativo.",
+            "c. Ninguna respuesta es correcta.",
+            "d. Ambas respuestas son correctas."
+        ],
+        "correct": "b"
+    },
+
+
+];
+
+const questionsPerTest = 10; // Total de preguntas en el test
+        const maxScore = 10; // Puntaje máximo posible
+        const pointsPerQuestion = 1 // Puntos por pregunta
+        let availableQuestions = JSON.parse(localStorage.getItem('availableQuestions')) || allQuestions.slice();
+        let shuffledQuestions, currentQuestionIndex;
+        let correctCount = 0;
+        let incorrectCount = 0;
+        let answeredCount = 0;
+        let incorrectQuestions = [];
+
+        document.getElementById('available-questions-count').textContent = availableQuestions.length;
+
+        function startTest() {
+            if (availableQuestions.length === 0) {
+                alert('Reiniciando preguntas...');
+                resetQuestions();
+                // Mostrar el botón de inicio después de reiniciar
+                document.getElementById('start-button').style.display = 'block';
+                return; // Salir de la función después de reiniciar
+            }
+            
+
+            correctCount = 0;
+            incorrectCount = 0;
+            answeredCount = 0;
+            incorrectQuestions = [];
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('incorrect-count').textContent = incorrectCount;
+            document.getElementById('answered-count').textContent = answeredCount;
+            document.getElementById('score-container').style.display = 'none';
+            document.getElementById('incorrect-questions-container').style.display = 'none';
+            document.getElementById('incorrect-questions-list').innerHTML = '';
+            shuffledQuestions = availableQuestions.sort(() => Math.random() - 0.5).slice(0, questionsPerTest);
+            currentQuestionIndex = 0;
+            document.getElementById('start-button').style.display = 'none';
+            document.getElementById('next-button').style.display = 'none';
+            document.getElementById('answer-buttons').style.display = 'none';
+            document.getElementById('author-name').style.display = 'none';
+
+            // Mostrar la primera pregunta del nuevo test
+            showQuestion(shuffledQuestions[currentQuestionIndex]);
+
+            // Mostrar los elementos relevantes para el nuevo test
+            document.getElementById('question-container').style.display = 'block';
+            document.getElementById('question-options').style.display = 'block'
+        }
+
+        function resetQuestions() {
+           alert('Reiniciando preguntas...');
+            availableQuestions = allQuestions.slice();
+            localStorage.setItem('availableQuestions', JSON.stringify(availableQuestions));
+            document.getElementById('available-questions-count').textContent = availableQuestions.length;
+            document.getElementById('start-button').style.display = 'block';
+        }
+
+        function showQuestion(question) {
+            document.getElementById('question').innerText = question.question;
+            document.getElementById('question').style.color = 'white'; // Restaurar el color original
+            const optionsContainer = document.getElementById('question-options');
+            optionsContainer.innerHTML = ''; // Limpiar el contenido anterior
+
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('answer');
+                optionElement.textContent = option;
+                optionElement.setAttribute('data-option', String.fromCharCode(97 + index));
+                optionElement.setAttribute('onclick', `checkAnswer('${String.fromCharCode(97 + index)}')`);
+                optionsContainer.appendChild(optionElement);
+            });
+
+            document.getElementById('answer-buttons').style.display = 'block';
+        }
+
+        function checkAnswer(answer) {
+            const question = shuffledQuestions[currentQuestionIndex];
+            if (answer === question.correct) {
+                document.getElementById('question').style.color = 'green';
+                correctCount += pointsPerQuestion;
+                availableQuestions = availableQuestions.filter(q => q.question !== question.question);
+                localStorage.setItem('availableQuestions', JSON.stringify(availableQuestions));
+                document.getElementById('available-questions-count').textContent = availableQuestions.length;
+            } else {
+                document.getElementById('question').style.color = 'red';
+                incorrectCount++;
+                incorrectQuestions.push({ question: question.question, answer: answer });
+
+                // Resaltar la respuesta correcta
+                const correctOption = document.querySelector(`[data-option="${question.correct}"]`);
+                if (correctOption) {
+                    correctOption.style.backgroundColor = 'green';
+                    correctOption.style.color = 'white';
+                }
+            }
+            answeredCount++;
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('incorrect-count').textContent = incorrectCount;
+            document.getElementById('answered-count').textContent = answeredCount;
+
+            // Deshabilitar las respuestas para esta pregunta
+            const answerButtons = document.querySelectorAll('.answer');
+            answerButtons.forEach(button => {
+                button.onclick = null; // Eliminar el manejador de eventos
+                button.style.cursor = 'default'; // Cambiar el cursor para indicar que está deshabilitado
+            });
+
+            document.getElementById('answer-buttons').style.display = 'none';
+            document.getElementById('next-button').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                showQuestion(shuffledQuestions[currentQuestionIndex]);
+                document.getElementById('question').style.color = 'white';
+                document.getElementById('next-button').style.display = 'none';
+                document.getElementById('answer-buttons').style.display = 'block';
+            } else {
+                let adjustedCorrectCount = correctCount;
+
+                // Calcular penalización por respuestas incorrectas
+                incorrectQuestions.forEach(entry => {
+                    const question = allQuestions.find(q => q.question === entry.question);
+                    const incorrectPenalty = 0 ; // no hay penalización por respuestas incorrectas
+                    adjustedCorrectCount -= incorrectPenalty;
+                });
+
+                // Calcular la nota final
+                const score = (adjustedCorrectCount / questionsPerTest) * 10;
+
+                document.getElementById('question-container').style.display = 'none'; // Ocultar contenedor de preguntas
+                document.getElementById('question-options').style.display = 'none'; // Ocultar opciones de preguntas
+
+                document.getElementById('question').innerText = `Test terminado. Aciertos: ${correctCount}, Fallos: ${incorrectCount}, Nota: ${score.toFixed(2)}`;
+                document.getElementById('score').textContent = score.toFixed(2);
+                document.getElementById('score-container').style.display = 'block';
+                document.getElementById('next-button').style.display = 'none';
+                document.getElementById('start-button').style.display = 'block';
+                document.getElementById('author-name').style.display = 'block';
+
+                showIncorrectQuestions();
+            }
+        }
+
+        function showIncorrectQuestions() {
+            const incorrectQuestionsContainer = document.getElementById('incorrect-questions-container');
+            const incorrectQuestionsList = document.getElementById('incorrect-questions-list');
+            incorrectQuestions.forEach(entry => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${entry.question} (Tu respuesta: ${entry.answer})`;
+                incorrectQuestionsList.appendChild(listItem);
+            });
+            incorrectQuestionsContainer.style.display = 'block';
+            document.getElementById('answer-buttons').style.display = 'none'; // Asegurarse de ocultar las opciones de respuesta al mostrar las preguntas incorrectas
+            document.getElementById('question-options').style.display = 'none'; // Asegurar que las opciones estén ocultas
+        }
+    </script>
+
+<button id="reset-button" onclick="resetQuestions()">Reiniciar Preguntas</button>
+</body>
+</html>
